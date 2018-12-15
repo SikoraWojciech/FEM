@@ -103,7 +103,7 @@ def H_matrix_local(x_lst, y_lst, k):
     return H_matrix
 
 
-def C_matrix_local(x_lst, y_lst, c, ro):
+def C_matrix(x_lst, y_lst, c, ro):
     # Macierz C : Calka(c * ro * {N} * {N}T)
     # Mnozymy przez wyznacznik Jakobianu zeby miec wynik calki (powiedziec na ile oklamalismy)
     p = [
@@ -135,12 +135,60 @@ def C_matrix_local(x_lst, y_lst, c, ro):
         N_matrices_multiplied.append(N_matrix_multiplied * c * ro * det_jacobian)
 
     # Obliczanie macierzy C na podstawie punktow calkowania
-    # Macierz C jest suma odpowiednich wartosci z macierzy poszczegolnych punktow calkowania
-    C_matrix = zeros([4, 4])
+    # Macierz C jest suma odpowiednich wartosci z macierzy pomnozonej przez transponowana dla punktow calkowania
+    result = zeros([4, 4])
     for i in range(4):
         for j in range(4):
             val_tmp = 0
             for integration_point in range(4):
                 val_tmp += N_matrices_multiplied[integration_point].item(i, j)
-            C_matrix.itemset((i, j), val_tmp)
-    return C_matrix
+                result.itemset((i, j), val_tmp)
+    return result
+
+
+# Macierz lokalna H dla warunkow brzegowych
+def H_BC_matrix(surface_indexs, x_lst, y_lst, alfa):
+    # o - punkty calkowania dla powierzchni
+    #
+    #           SI = 3
+    #         __o_____o__
+    #        |           |
+    #        o           o
+    # SI = 4 |           | SI = 2
+    #        o           o
+    #        |__o_____o__|
+    #
+    #           SI = 1
+
+    p = []
+    for surface_index in surface_indexs:
+        if surface_index == 1:  # SI = 1
+            p.append(PointKsiEta(-1 / sqrt(3), -1))
+            p.append(PointKsiEta(1 / sqrt(3), -1))
+        if surface_index == 2:  # SI = 2
+            p.append(PointKsiEta(1, -1 / sqrt(3)))
+            p.append(PointKsiEta(1, 1 / sqrt(3)))
+        if surface_index == 3:  # SI = 3
+            p.append(PointKsiEta(1 / sqrt(3), 1))
+            p.append(PointKsiEta(-1 / sqrt(3), 1))
+        if surface_index == 4:  # SI = 4
+            p.append(PointKsiEta(-1, 1 / sqrt(3)))
+            p.append(PointKsiEta(-1, -1 / sqrt(3)))
+
+    # Obliczanie {N}*{N}T * alfa dla kazdego punktu calkowania
+    N_matrices_multiplied = []
+    for integral_point_no in range(len(p)):
+        N_matrix = zeros(4)
+        matrix_multiplied = zeros([4, 4])
+        for shape_func_no in range(4):
+            N_matrix.itemset(shape_func_no, N(shape_func_no, p[integral_point_no].ksi, p[integral_point_no].eta))
+            N_matrix_T = N_matrix.reshape(4, 1)
+            matrix_multiplied = N_matrix * N_matrix_T * alfa
+        N_matrices_multiplied.append(matrix_multiplied)
+
+    # Macierz H dla warunkow brzechowych to suma macierzy powstalych z {N}*{N}T * alfa
+    # Dla kazdego boku mamy 1D wiec wyznacznik macierzy Jakobiego = dlugosc_boku/2
+    result = zeros([4, 4])
+    for matrix_index in range(len(N_matrices_multiplied)):
+        result += N_matrices_multiplied[matrix_index] * 0.0125
+    return result

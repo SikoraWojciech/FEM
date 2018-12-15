@@ -36,7 +36,7 @@ class ModelsManager:
                                                   self.grid.nodes[id_n2_tmp - 1],
                                                   self.grid.nodes[id_n3_tmp - 1],
                                                   self.grid.nodes[id_n4_tmp - 1],
-                                                  0))
+                                                  self.settings["k"]))
                 id_tmp += 1
                 id_n1_tmp += 1
                 id_n2_tmp += 1
