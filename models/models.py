@@ -43,3 +43,15 @@ class Grid:
 
         for element in self.elements:
             element.print()
+
+
+class PointKsiEta:
+    def __init__(self, ksi, eta):
+        self.ksi = ksi
+        self.eta = eta
+
+
+class PointXY:
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y

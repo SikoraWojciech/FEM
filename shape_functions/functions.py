@@ -1,52 +1,42 @@
 
 
 # shape functions
-def N1(ksi, eta):
-    return (1/4)*(1 - ksi)*(1 - eta)
-
-
-def N2(ksi, eta):
-    return (1/4)*(1 + ksi)*(1 - eta)
-
-
-def N3(ksi, eta):
-    return (1/4)*(1 + ksi)*(1 + eta)
-
-
-def N4(ksi, eta):
-    return (1/4)*(1 - ksi)*(1 + eta)
+def N(i, ksi, eta):
+    if i == 0:
+        return (1 / 4) * (1 - ksi) * (1 - eta)
+    elif i == 1:
+        return (1 / 4) * (1 + ksi) * (1 - eta)
+    elif i == 2:
+        return (1 / 4) * (1 + ksi) * (1 + eta)
+    elif i == 3:
+        return (1 / 4) * (1 - ksi) * (1 + eta)
+    else:
+        return 0
 
 
 # ksi derivatives
-def dN1_dksi(eta):
-    return (-1/4)*(1 - eta)
-
-
-def dN2_dksi(eta):
-    return (1/4)*(1 - eta)
-
-
-def dN3_dksi(eta):
-    return (1/4)*(1 + eta)
-
-
-def dN4_dksi(eta):
-    return (-1/4)*(1 + eta)
+def dN_dksi(i, eta):
+    if i == 0:
+        return (-1 / 4) * (1 - eta)
+    elif i == 1:
+        return (1 / 4) * (1 - eta)
+    elif i == 2:
+        return (1 / 4) * (1 + eta)
+    elif i == 3:
+        return (-1 / 4) * (1 + eta)
+    else:
+        return 0
 
 
 # eta derrivatives
-def dN1_deta(ksi):
-    return (-1/4)*(1 - ksi)
-
-
-def dN2_deta(ksi):
-    return (-1/4)*(1 + ksi)
-
-
-def dN3_deta(ksi):
-    return (1/4)*(1 + ksi)
-
-
-def dN4_deta(ksi):
-    return (1/4)*(1 - ksi)
-
+def dN_deta(i, ksi):
+    if i == 0:
+        return (-1 / 4) * (1 - ksi)
+    elif i == 1:
+        return (-1 / 4) * (1 + ksi)
+    elif i == 2:
+        return (1 / 4) * (1 + ksi)
+    elif i == 3:
+        return (1 / 4) * (1 - ksi)
+    else:
+        return 0
