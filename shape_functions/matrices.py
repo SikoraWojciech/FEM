@@ -65,7 +65,7 @@ def H_matrix_local(x_lst, y_lst, k):
 
     matrix_multiplied_by_k = []
     for i in range(4):
-        # Wyznaczamy listy 4x1) dN/dksi i dN/deta dla kazdego punktu calkowania
+        # Wyznaczamy listy 4x1 dN/dksi i dN/deta dla kazdego punktu calkowania
         dN_dksi_lst = dN_dksi_matix(p[i])
         dN_deta_lst = dN_deta_matix(p[i])
 
@@ -96,8 +96,51 @@ def H_matrix_local(x_lst, y_lst, k):
     for i in range(4):
         for j in range(4):
             val_tmp = 0
-            for val_counter in range(4):
-                val_tmp += matrix_multiplied_by_k[val_counter].item((i, j))
+            for integration_point in range(4):
+                val_tmp += matrix_multiplied_by_k[integration_point].item((i, j))
             H_matrix.itemset((i, j), val_tmp)
 
     return H_matrix
+
+
+def C_matrix_local(x_lst, y_lst, c, ro):
+    # Macierz C : Calka(c * ro * {N} * {N}T)
+    # Mnozymy przez wyznacznik Jakobianu zeby miec wynik calki (powiedziec na ile oklamalismy)
+    p = [
+        PointKsiEta(-1 / sqrt(3), -1 / sqrt(3)),
+        PointKsiEta(1 / sqrt(3), -1 / sqrt(3)),
+        PointKsiEta(1 / sqrt(3), 1 / sqrt(3)),
+        PointKsiEta(-1 / sqrt(3), 1 / sqrt(3))
+    ]
+
+    N_matrices_multiplied = []
+    for i in range(4):
+        # Wyznaczamy listy 4x1 dN/dksi i dN/deta dla kazdego punktu calkowania
+        dN_dksi_lst = dN_dksi_matix(p[i])
+        dN_deta_lst = dN_deta_matix(p[i])
+
+        # Wykorzystujemy je do wyliczenia Jacobianu
+        jacobian = Jacobian_matrix(x_lst, y_lst, dN_dksi_lst, dN_deta_lst)
+
+        # Wyznacznik bedzie nam potrzebny by powiedziec na ile oszacowalismy wynik
+        det_jacobian = linalg.det(jacobian)
+
+        # Obliczanie {N}*{N}T * c * ro * det Jacobian
+        N_matrix = zeros(4)
+        for j in range(4):
+            N_matrix.itemset(j, N(j, p[i].ksi, p[i].eta))
+        N_matrix_T = N_matrix.reshape(4, 1)
+        N_matrix_multiplied = N_matrix * N_matrix_T
+
+        N_matrices_multiplied.append(N_matrix_multiplied * c * ro * det_jacobian)
+
+    # Obliczanie macierzy C na podstawie punktow calkowania
+    # Macierz C jest suma odpowiednich wartosci z macierzy poszczegolnych punktow calkowania
+    C_matrix = zeros([4, 4])
+    for i in range(4):
+        for j in range(4):
+            val_tmp = 0
+            for integration_point in range(4):
+                val_tmp += N_matrices_multiplied[integration_point].item(i, j)
+            C_matrix.itemset((i, j), val_tmp)
+    return C_matrix
