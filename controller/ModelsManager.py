@@ -15,7 +15,7 @@ class ModelsManager:
         for i in range(self.settings["nL"]):
             y_tmp = 0
             for j in range(self.settings["nH"]):
-                self.grid.nodes.append(Node(id_tmp, x_tmp, y_tmp, 0))
+                self.grid.nodes.append(Node(id_tmp, x_tmp, y_tmp, self.settings["initial_temp"]))
                 y_tmp += dH
                 id_tmp += 1
             x_tmp += dL
@@ -71,6 +71,3 @@ class ModelsManager:
             element.H_matrix = H_matrix_local(element, self.settings["alfa"])
             element.C_matrix = C_matrix(element, self.settings["c"], self.settings["ro"])
             element.P_vector = P_vector(element, self.settings["ambient_temp"], self.settings["alfa"])
-            print(element.id)
-            print(element.P_vector)
-            print()

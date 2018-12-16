@@ -7,5 +7,6 @@
   "c": 700,
   "ro": 7800,
   "alfa": 25,
-  "ambient_temp": 1200
+  "ambient_temp": 1200,
+  "initial_temp": 100
 }
