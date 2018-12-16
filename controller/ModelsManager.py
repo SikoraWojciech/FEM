@@ -1,4 +1,5 @@
 from models.models import *
+from shape_functions.matrices import H_matrix_local, C_matrix
 
 
 class ModelsManager:
@@ -31,12 +32,32 @@ class ModelsManager:
             id_n4_tmp = id_n1_tmp + 1
 
             for j in range(nH - 1):
-                self.grid.elements.append(Element(id_tmp,
-                                                  self.grid.nodes[id_n1_tmp - 1],
-                                                  self.grid.nodes[id_n2_tmp - 1],
-                                                  self.grid.nodes[id_n3_tmp - 1],
-                                                  self.grid.nodes[id_n4_tmp - 1],
-                                                  self.settings["k"]))
+                element = Element(id_tmp,
+                                  self.grid.nodes[id_n1_tmp - 1],
+                                  self.grid.nodes[id_n2_tmp - 1],
+                                  self.grid.nodes[id_n3_tmp - 1],
+                                  self.grid.nodes[id_n4_tmp - 1],
+                                  [],
+                                  self.settings["k"])
+                self.grid.elements.append(element)
+
+                # warunki brzegowe
+                if self.grid.nodes[id_n1_tmp - 1].y == 0 \
+                        and self.grid.nodes[id_n2_tmp - 1].y == 0:
+                    element.heated_surfaces_indexes.append(1)
+
+                if self.grid.nodes[id_n2_tmp - 1].x == self.settings["L"] \
+                        and self.grid.nodes[id_n3_tmp - 1].x == self.settings["L"]:
+                    element.heated_surfaces_indexes.append(2)
+
+                if self.grid.nodes[id_n3_tmp - 1].y == self.settings["H"] \
+                        and self.grid.nodes[id_n4_tmp - 1].y == self.settings["H"]:
+                    element.heated_surfaces_indexes.append(3)
+
+                if self.grid.nodes[id_n4_tmp - 1].x == 0 \
+                        and self.grid.nodes[id_n1_tmp - 1].x == 0:
+                    element.heated_surfaces_indexes.append(4)
+
                 id_tmp += 1
                 id_n1_tmp += 1
                 id_n2_tmp += 1
@@ -46,3 +67,7 @@ class ModelsManager:
     def create_grid(self):
         self.__create_nodes()
         self.__create_elements()
+        for element in self.grid.elements:
+            element.H_matrix = H_matrix_local(element, self.settings["alfa"])
+            element.C_matrix = C_matrix(element, self.settings["c"], self.settings["ro"])
+

@@ -1,3 +1,6 @@
+from numpy import  *
+
+
 class Node:
 
     def __init__(self, id, x, y, temp):
@@ -12,10 +15,14 @@ class Node:
 
 class Element:
 
-    def __init__(self, id, node1, node2, node3, node4, k):
+    def __init__(self, id, node1, node2, node3, node4, surface_indexes, k):
         self.id = id
         self.nodes = [node1, node2, node3, node4]
+        self.heated_surfaces_indexes = surface_indexes
         self.k = k
+        self.H_matrix = zeros([4, 4])
+        self.C_matrix = zeros([4, 4])
+        self.P_vector = zeros(4)
 
     def print(self):
         print("ID: {}; Nodes[{}, {}, {}, {}]; k = {}"
@@ -50,8 +57,3 @@ class PointKsiEta:
         self.ksi = ksi
         self.eta = eta
 
-
-class PointXY:
-    def __init__(self, x, y):
-        self.x = x
-        self.y = y

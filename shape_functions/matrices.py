@@ -1,4 +1,4 @@
-from models.models import PointKsiEta
+from models.models import PointKsiEta, Element
 from shape_functions.functions import *
 from math import *
 from numpy import *
@@ -18,7 +18,7 @@ def dN_deta_matix(p):
     return result
 
 
-def Jacobian_matrix(x_lst, y_lst, dN_dksi_lst, dN_deta_lst):
+def Jacobian_matrix(element, dN_dksi_lst, dN_deta_lst):
     dx_dksi = 0
     dx_deta = 0
     dy_dksi = 0
@@ -27,10 +27,10 @@ def Jacobian_matrix(x_lst, y_lst, dN_dksi_lst, dN_deta_lst):
     # dy/dksi = dN1/deta * x1 + .. + dN4/deta * x4
     # analogicznie dla y
     for i in range(4):
-        dx_dksi += dN_dksi_lst[i] * x_lst[i]
-        dx_deta += dN_deta_lst[i] * x_lst[i]
-        dy_dksi += dN_dksi_lst[i] * y_lst[i]
-        dy_deta += dN_deta_lst[i] * y_lst[i]
+        dx_dksi += dN_dksi_lst[i] * element.nodes[i].x
+        dx_deta += dN_deta_lst[i] * element.nodes[i].x
+        dy_dksi += dN_dksi_lst[i] * element.nodes[i].y
+        dy_deta += dN_deta_lst[i] * element.nodes[i].y
     matrix_tmp = matrix([[dx_dksi, dy_dksi],
                          [dx_deta, dy_deta]])
     return matrix_tmp
@@ -54,7 +54,7 @@ def dN_dy_matrix(inverse_jacobian, dN_dksi_lst, dN_deta_lst):
     return result
 
 
-def H_matrix_local(x_lst, y_lst, k):
+def H_matrix(element):
     # 4 punkty calkowania - uklad ksi i eta
     p = [
         PointKsiEta(-1 / sqrt(3), -1 / sqrt(3)),
@@ -70,7 +70,7 @@ def H_matrix_local(x_lst, y_lst, k):
         dN_deta_lst = dN_deta_matix(p[i])
 
         # Wykorzystujemy je do wyliczenia Jacobianu
-        jacobian = Jacobian_matrix(x_lst, y_lst, dN_dksi_lst, dN_deta_lst)
+        jacobian = Jacobian_matrix(element, dN_dksi_lst, dN_deta_lst)
 
         # Odwracamy Jacobian by wyznaczyc dN/dx i dN/dy
         inverse_jacobian = linalg.inv(jacobian)
@@ -89,21 +89,20 @@ def H_matrix_local(x_lst, y_lst, k):
         dN_dy_matrix_multiplied_by_det = (dN_dy * dN_dy_T) * det_jacobian
 
         # Mnozymy nasze macierze 4x4 razy wspolczynnik przewodzenia k
-        matrix_multiplied_by_k.append((dN_dy_matrix_multiplied_by_det + dN_dx_matrix_multiplied_by_det) * k)
+        matrix_multiplied_by_k.append((dN_dy_matrix_multiplied_by_det + dN_dx_matrix_multiplied_by_det) * 30)
 
     # Wyznaczamy macierz H 4x4 poprzez sumowanie poszczegolnych wartosci z macierzy pomnozonej przez k
-    H_matrix = zeros([4, 4])
+    result = zeros([4, 4])
     for i in range(4):
         for j in range(4):
             val_tmp = 0
             for integration_point in range(4):
                 val_tmp += matrix_multiplied_by_k[integration_point].item((i, j))
-            H_matrix.itemset((i, j), val_tmp)
+                result.itemset((i, j), val_tmp)
+    return result
 
-    return H_matrix
 
-
-def C_matrix(x_lst, y_lst, c, ro):
+def C_matrix(element, c, ro):
     # Macierz C : Calka(c * ro * {N} * {N}T)
     # Mnozymy przez wyznacznik Jakobianu zeby miec wynik calki (powiedziec na ile oklamalismy)
     p = [
@@ -120,7 +119,7 @@ def C_matrix(x_lst, y_lst, c, ro):
         dN_deta_lst = dN_deta_matix(p[i])
 
         # Wykorzystujemy je do wyliczenia Jacobianu
-        jacobian = Jacobian_matrix(x_lst, y_lst, dN_dksi_lst, dN_deta_lst)
+        jacobian = Jacobian_matrix(element, dN_dksi_lst, dN_deta_lst)
 
         # Wyznacznik bedzie nam potrzebny by powiedziec na ile oszacowalismy wynik
         det_jacobian = linalg.det(jacobian)
@@ -146,8 +145,8 @@ def C_matrix(x_lst, y_lst, c, ro):
     return result
 
 
-# Macierz lokalna H dla warunkow brzegowych
-def H_BC_matrix(surface_indexs, x_lst, y_lst, alfa):
+def H_BC_matrix(element, alfa):
+    # Macierz lokalna H dla warunkow brzegowych
     # o - punkty calkowania dla powierzchni
     #
     #           SI = 3
@@ -161,7 +160,7 @@ def H_BC_matrix(surface_indexs, x_lst, y_lst, alfa):
     #           SI = 1
 
     p = []
-    for surface_index in surface_indexs:
+    for surface_index in element.heated_surfaces_indexes:
         if surface_index == 1:  # SI = 1
             p.append(PointKsiEta(-1 / sqrt(3), -1))
             p.append(PointKsiEta(1 / sqrt(3), -1))
@@ -190,5 +189,17 @@ def H_BC_matrix(surface_indexs, x_lst, y_lst, alfa):
     # Dla kazdego boku mamy 1D wiec wyznacznik macierzy Jakobiego = dlugosc_boku/2
     result = zeros([4, 4])
     for matrix_index in range(len(N_matrices_multiplied)):
-        result += N_matrices_multiplied[matrix_index] * 0.0125
+        if matrix_index in range(0, 2):
+            result += N_matrices_multiplied[matrix_index] * 0.5 * element.nodes[1].x - element.nodes[0].x
+        elif matrix_index in range(2, 4):
+            result += N_matrices_multiplied[matrix_index] * 0.5 * element.nodes[2].y - element.nodes[1].y
+        elif matrix_index in range(4, 6):
+            result += N_matrices_multiplied[matrix_index] * 0.5 * element.nodes[2].x - element.nodes[3].x
+        elif matrix_index in range(6, 8):
+            result += N_matrices_multiplied[matrix_index] * 0.5 * element.nodes[3].y - element.nodes[0].y
     return result
+
+
+def H_matrix_local(element, alfa):
+    # Macierz lokalna powstaje w wyniku zsumowania macierzy H dla punktow i macierzy H z warunkami brzegowymi
+    return H_matrix(element) + H_BC_matrix(element, alfa)
