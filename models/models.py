@@ -32,9 +32,12 @@ class Element:
 
 class Grid:
 
-    def __init__(self):
+    def __init__(self, settings):
         self.nodes = []
         self.elements = []
+        self.H_matrix = zeros((settings["nH"], settings["nL"]))
+        self.C_matrix = zeros((settings["nH"], settings["nL"]))
+        self.P_vector = zeros((settings["nH"] * settings["nL"]))
 
     def __del__(self):
         for node in self.nodes:

@@ -5,7 +5,7 @@ from shape_functions.matrices import H_matrix_local, C_matrix, P_vector
 class ModelsManager:
     def __init__(self, settings):
         self.settings = settings
-        self.grid = Grid()
+        self.grid = Grid(settings)
 
     def __create_nodes(self):
         dH = self.settings["H"] / (self.settings["nH"] - 1)
@@ -71,6 +71,3 @@ class ModelsManager:
             element.H_matrix = H_matrix_local(element, self.settings["alfa"])
             element.C_matrix = C_matrix(element, self.settings["c"], self.settings["ro"])
             element.P_vector = P_vector(element, self.settings["ambient_temp"], self.settings["alfa"])
-            print(element.id)
-            print(element.P_vector)
-            print()
