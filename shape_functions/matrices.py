@@ -159,44 +159,51 @@ def H_BC_matrix(element, alfa):
     #
     #           SI = 1
 
-    p = []
+    p = [PointKsiEta(-1 / sqrt(3), -1),
+         PointKsiEta(1 / sqrt(3), -1),
+         PointKsiEta(1, -1 / sqrt(3)),
+         PointKsiEta(1, 1 / sqrt(3)),
+         PointKsiEta(1 / sqrt(3), 1),
+         PointKsiEta(-1 / sqrt(3), 1),
+         PointKsiEta(-1, 1 / sqrt(3)),
+         PointKsiEta(-1, -1 / sqrt(3))]
+
+    # Dla kazdego boku mamy 1D wiec wyznacznik macierzy Jakobiego = dlugosc_boku/2
+    detJx = element.nodes[1].x - element.nodes[0].x
+    detJy = element.nodes[2].y - element.nodes[1].y
+
+    surfaces = [{"SI": 1, "detJ": detJx, "p_range": range(0, 2), "is_heated": 0},
+                {"SI": 2, "detJ": detJy, "p_range": range(2, 4), "is_heated": 0},
+                {"SI": 3, "detJ": detJx, "p_range": range(4, 6), "is_heated": 0},
+                {"SI": 4, "detJ": detJy, "p_range": range(6, 8), "is_heated": 0}]
+
     for surface_index in element.heated_surfaces_indexes:
         if surface_index == 1:  # SI = 1
-            p.append(PointKsiEta(-1 / sqrt(3), -1))
-            p.append(PointKsiEta(1 / sqrt(3), -1))
+            surfaces[0]["is_heated"] = 1
         if surface_index == 2:  # SI = 2
-            p.append(PointKsiEta(1, -1 / sqrt(3)))
-            p.append(PointKsiEta(1, 1 / sqrt(3)))
+            surfaces[1]["is_heated"] = 1
         if surface_index == 3:  # SI = 3
-            p.append(PointKsiEta(1 / sqrt(3), 1))
-            p.append(PointKsiEta(-1 / sqrt(3), 1))
+            surfaces[2]["is_heated"] = 1
         if surface_index == 4:  # SI = 4
-            p.append(PointKsiEta(-1, 1 / sqrt(3)))
-            p.append(PointKsiEta(-1, -1 / sqrt(3)))
+            surfaces[3]["is_heated"] = 1
 
-    # Obliczanie {N}*{N}T * alfa dla kazdego punktu calkowania
+    # Obliczanie {N}*{N}T * alfa dla kazdej powierzchni -> kazdego punktu calkowania
     N_matrices_multiplied = []
-    for integral_point_no in range(len(p)):
-        N_matrix = zeros(4)
-        matrix_multiplied = zeros([4, 4])
-        for shape_func_no in range(4):
-            N_matrix.itemset(shape_func_no, N(shape_func_no, p[integral_point_no].ksi, p[integral_point_no].eta))
+    for surface in surfaces:
+        N_matrix_for_sum = zeros((4, 4))
+        for integral_point_no in surface["p_range"]:
+            N_matrix = zeros(4)
+            for shape_func_no in range(4):
+                N_matrix.itemset(shape_func_no, N(shape_func_no, p[integral_point_no].ksi, p[integral_point_no].eta))
             N_matrix_T = N_matrix.reshape(4, 1)
-            matrix_multiplied = N_matrix * N_matrix_T * alfa
-        N_matrices_multiplied.append(matrix_multiplied)
+            N_matrix_for_sum += N_matrix * N_matrix_T * alfa
+        N_matrix_for_sum = N_matrix_for_sum * 0.5 * surface["detJ"] * surface["is_heated"]
+        N_matrices_multiplied.append(N_matrix_for_sum)
 
     # Macierz H dla warunkow brzechowych to suma macierzy powstalych z {N}*{N}T * alfa
-    # Dla kazdego boku mamy 1D wiec wyznacznik macierzy Jakobiego = dlugosc_boku/2
     result = zeros([4, 4])
     for matrix_index in range(len(N_matrices_multiplied)):
-        if matrix_index in range(0, 2):
-            result += N_matrices_multiplied[matrix_index] * 0.5 * element.nodes[1].x - element.nodes[0].x
-        elif matrix_index in range(2, 4):
-            result += N_matrices_multiplied[matrix_index] * 0.5 * element.nodes[2].y - element.nodes[1].y
-        elif matrix_index in range(4, 6):
-            result += N_matrices_multiplied[matrix_index] * 0.5 * element.nodes[2].x - element.nodes[3].x
-        elif matrix_index in range(6, 8):
-            result += N_matrices_multiplied[matrix_index] * 0.5 * element.nodes[3].y - element.nodes[0].y
+        result += N_matrices_multiplied[matrix_index]
     return result
 
 
@@ -207,40 +214,47 @@ def H_matrix_local(element, alfa):
 
 def P_vector(element, ambient_temp, alfa):
     # Sytuacja analogiczna jak w macierzy H z warunkami brzegowymi
-    p = []
-    for surface_index in element.heated_surfaces_indexes:
-        if surface_index == 1:  # SI = 1
-            p.append(PointKsiEta(-1 / sqrt(3), -1))
-            p.append(PointKsiEta(1 / sqrt(3), -1))
-        if surface_index == 2:  # SI = 2
-            p.append(PointKsiEta(1, -1 / sqrt(3)))
-            p.append(PointKsiEta(1, 1 / sqrt(3)))
-        if surface_index == 3:  # SI = 3
-            p.append(PointKsiEta(1 / sqrt(3), 1))
-            p.append(PointKsiEta(-1 / sqrt(3), 1))
-        if surface_index == 4:  # SI = 4
-            p.append(PointKsiEta(-1, 1 / sqrt(3)))
-            p.append(PointKsiEta(-1, -1 / sqrt(3)))
-
-    # Obliczanie {N} * alfa * temp_otoczenia dla kazdego punktu calkowania
-    N_matrices_multiplied = []
-    for integral_point_no in range(len(p)):
-        N_matrix = zeros(4)
-        matrix_multiplied = zeros(4)
-        for shape_func_no in range(4):
-            N_matrix.itemset(shape_func_no, N(shape_func_no, p[integral_point_no].ksi, p[integral_point_no].eta))
-            matrix_multiplied = N_matrix * ambient_temp * (-alfa)
-        N_matrices_multiplied.append(matrix_multiplied)
+    p = [PointKsiEta(-1 / sqrt(3), -1),
+         PointKsiEta(1 / sqrt(3), -1),
+         PointKsiEta(1, -1 / sqrt(3)),
+         PointKsiEta(1, 1 / sqrt(3)),
+         PointKsiEta(1 / sqrt(3), 1),
+         PointKsiEta(-1 / sqrt(3), 1),
+         PointKsiEta(-1, 1 / sqrt(3)),
+         PointKsiEta(-1, -1 / sqrt(3))]
 
     # Dla kazdego boku mamy 1D wiec wyznacznik macierzy Jakobiego = dlugosc_boku/2
+    detJx = element.nodes[1].x - element.nodes[0].x
+    detJy = element.nodes[2].y - element.nodes[1].y
+
+    surfaces = [{"SI": 1, "detJ": detJx, "p_range": range(0, 2), "is_heated": 0},
+                {"SI": 2, "detJ": detJy, "p_range": range(2, 4), "is_heated": 0},
+                {"SI": 3, "detJ": detJx, "p_range": range(4, 6), "is_heated": 0},
+                {"SI": 4, "detJ": detJy, "p_range": range(6, 8), "is_heated": 0}]
+
+    for surface_index in element.heated_surfaces_indexes:
+        if surface_index == 1:  # SI = 1
+            surfaces[0]["is_heated"] = 1
+        if surface_index == 2:  # SI = 2
+            surfaces[1]["is_heated"] = 1
+        if surface_index == 3:  # SI = 3
+            surfaces[2]["is_heated"] = 1
+        if surface_index == 4:  # SI = 4
+            surfaces[3]["is_heated"] = 1
+
+    # Obliczanie {N} * -alfa * temp_otoczenia dla kazdej powierzchni -> kazdego punktu calkowania
+    P_vectors_multiplied = []
+    for surface in surfaces:
+        P_vector_for_sum = zeros(4)
+        for integral_point_no in surface["p_range"]:
+            P_vec = zeros(4)
+            for shape_func_no in range(4):
+                P_vec.itemset(shape_func_no, N(shape_func_no, p[integral_point_no].ksi, p[integral_point_no].eta))
+            P_vector_for_sum += P_vec
+        P_vector_for_sum *= 0.5 * surface["detJ"] * surface["is_heated"] * (- alfa) * ambient_temp
+        P_vectors_multiplied.append(P_vector_for_sum)
+
     result = zeros(4)
-    for matrix_index in range(len(N_matrices_multiplied)):
-        if matrix_index in range(0, 2):
-            result += N_matrices_multiplied[matrix_index] * 0.5 * element.nodes[1].x - element.nodes[0].x
-        elif matrix_index in range(2, 4):
-            result += N_matrices_multiplied[matrix_index] * 0.5 * element.nodes[2].y - element.nodes[1].y
-        elif matrix_index in range(4, 6):
-            result += N_matrices_multiplied[matrix_index] * 0.5 * element.nodes[2].x - element.nodes[3].x
-        elif matrix_index in range(6, 8):
-            result += N_matrices_multiplied[matrix_index] * 0.5 * element.nodes[3].y - element.nodes[0].y
+    for P_vec_index in range(len(P_vectors_multiplied)):
+        result += P_vectors_multiplied[P_vec_index]
     return result
