@@ -2,3 +2,4 @@ venv/*
 *.txt
 .idea/*
 *.pyc
+*.csv

@@ -169,8 +169,8 @@ def H_BC_matrix(element, alfa):
          PointKsiEta(-1, -1 / sqrt(3))]
 
     # Dla kazdego boku mamy 1D wiec wyznacznik macierzy Jakobiego = dlugosc_boku/2
-    detJx = element.nodes[1].x - element.nodes[0].x
-    detJy = element.nodes[2].y - element.nodes[1].y
+    detJx = (element.nodes[1].x - element.nodes[0].x) * 0.5
+    detJy = (element.nodes[2].y - element.nodes[1].y) * 0.5
 
     surfaces = [{"SI": 1, "detJ": detJx, "p_range": range(0, 2), "is_heated": 0},
                 {"SI": 2, "detJ": detJy, "p_range": range(2, 4), "is_heated": 0},
@@ -197,7 +197,7 @@ def H_BC_matrix(element, alfa):
                 N_matrix.itemset(shape_func_no, N(shape_func_no, p[integral_point_no].ksi, p[integral_point_no].eta))
             N_matrix_T = N_matrix.reshape(4, 1)
             N_matrix_for_sum += N_matrix * N_matrix_T * alfa
-        N_matrix_for_sum = N_matrix_for_sum * 0.5 * surface["detJ"] * surface["is_heated"]
+        N_matrix_for_sum *= surface["detJ"] * surface["is_heated"]
         N_matrices_multiplied.append(N_matrix_for_sum)
 
     # Macierz H dla warunkow brzechowych to suma macierzy powstalych z {N}*{N}T * alfa
@@ -224,8 +224,8 @@ def P_vector(element, ambient_temp, alfa):
          PointKsiEta(-1, -1 / sqrt(3))]
 
     # Dla kazdego boku mamy 1D wiec wyznacznik macierzy Jakobiego = dlugosc_boku/2
-    detJx = element.nodes[1].x - element.nodes[0].x
-    detJy = element.nodes[2].y - element.nodes[1].y
+    detJx = (element.nodes[1].x - element.nodes[0].x) * 0.5
+    detJy = (element.nodes[2].y - element.nodes[1].y) * 0.5
 
     surfaces = [{"SI": 1, "detJ": detJx, "p_range": range(0, 2), "is_heated": 0},
                 {"SI": 2, "detJ": detJy, "p_range": range(2, 4), "is_heated": 0},
@@ -251,7 +251,7 @@ def P_vector(element, ambient_temp, alfa):
             for shape_func_no in range(4):
                 P_vec.itemset(shape_func_no, N(shape_func_no, p[integral_point_no].ksi, p[integral_point_no].eta))
             P_vector_for_sum += P_vec
-        P_vector_for_sum *= 0.5 * surface["detJ"] * surface["is_heated"] * (- alfa) * ambient_temp
+        P_vector_for_sum *= surface["detJ"] * surface["is_heated"] * (- alfa) * ambient_temp
         P_vectors_multiplied.append(P_vector_for_sum)
 
     result = zeros(4)

@@ -1,4 +1,4 @@
-from numpy import  *
+from numpy import *
 
 
 class Node:
@@ -35,9 +35,10 @@ class Grid:
     def __init__(self, settings):
         self.nodes = []
         self.elements = []
-        self.H_matrix = zeros((settings["nH"], settings["nL"]))
-        self.C_matrix = zeros((settings["nH"], settings["nL"]))
-        self.P_vector = zeros((settings["nH"] * settings["nL"]))
+        nodes_count = settings["nH"] * settings["nL"]
+        self.H_matrix = zeros((nodes_count, nodes_count))
+        self.C_matrix = zeros((nodes_count, nodes_count))
+        self.P_vector = zeros(nodes_count)
 
     def __del__(self):
         for node in self.nodes:
@@ -48,15 +49,36 @@ class Grid:
     def print(self):
         for node in self.nodes:
             node.print()
-
         print()
-
         for element in self.elements:
             element.print()
+
+    def agregate_matrices(self):
+        for element in self.elements:
+            for i_local in range(4):
+                for j_local in range(4):
+                    i_global = element.nodes[i_local].id - 1
+                    j_global = element.nodes[j_local].id - 1
+
+                    val_H_local = element.H_matrix.item((i_local, j_local))
+                    val_H_global = self.H_matrix.item((i_global, j_global)) + val_H_local
+                    self.H_matrix.itemset((i_global, j_global), val_H_global)
+
+                    val_C_local = element.C_matrix.item((i_local, j_local))
+                    val_C_global = self.C_matrix.item((i_global, j_global)) + val_C_local
+                    self.C_matrix.itemset((i_global, j_global), val_C_global)
+
+    def agregate_vector(self):
+        for element in self.elements:
+            for i_local in range(4):
+                i_global = element.nodes[i_local].id - 1
+
+                val_P_local = element.P_vector.item(i_local)
+                val_P_global = self.P_vector.item(i_global) + val_P_local
+                self.P_vector.itemset(i_global, val_P_global)
 
 
 class PointKsiEta:
     def __init__(self, ksi, eta):
         self.ksi = ksi
         self.eta = eta
-

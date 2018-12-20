@@ -71,3 +71,6 @@ class ModelsManager:
             element.H_matrix = H_matrix_local(element, self.settings["alfa"])
             element.C_matrix = C_matrix(element, self.settings["c"], self.settings["ro"])
             element.P_vector = P_vector(element, self.settings["ambient_temp"], self.settings["alfa"])
+
+        self.grid.agregate_matrices()
+        self.grid.agregate_vector()
