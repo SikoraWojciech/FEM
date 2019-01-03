@@ -77,6 +77,32 @@ class Grid:
                 val_P_global = self.P_vector.item(i_global) + val_P_local
                 self.P_vector.itemset(i_global, val_P_global)
 
+    def heat(self, settings):
+        nodes_count = len(self.nodes)
+        dT = settings["time_step"]
+
+        left_part_of_equation = self.H_matrix + (self.C_matrix / dT)
+
+        for interval in range(0, settings["simulation_time"], dT):
+
+            # Wektor t0 - temperatury kazdego z wezlow
+            t0_vector = zeros(nodes_count)
+            for i in range(nodes_count):
+                t0_vector.itemset(i, self.nodes[i].temp)
+
+            right_part_of_equation = -self.P_vector + (self.C_matrix / dT) @ t0_vector
+
+            t1_vector = linalg.solve(left_part_of_equation, right_part_of_equation)
+
+            for i in range(len(t1_vector)):
+                self.nodes[i].temp = t1_vector[i]
+
+            print('Interval {}'.format(interval))
+            print('=========================================')
+            print('Max: {}'.format(max(t1_vector)))
+            print('Min: {}'.format(min(t1_vector)))
+            print()
+
 
 class PointKsiEta:
     def __init__(self, ksi, eta):

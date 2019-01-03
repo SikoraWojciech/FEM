@@ -67,8 +67,10 @@ class ModelsManager:
     def create_grid(self):
         self.__create_nodes()
         self.__create_elements()
+
         for element in self.grid.elements:
-            element.H_matrix = H_matrix_local(element, self.settings["alfa"])
+
+            element.H_matrix = H_matrix_local(element, self.settings["alfa"], self.settings["k"])
             element.C_matrix = C_matrix(element, self.settings["c"], self.settings["ro"])
             element.P_vector = P_vector(element, self.settings["ambient_temp"], self.settings["alfa"])
 

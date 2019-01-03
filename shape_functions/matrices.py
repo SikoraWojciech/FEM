@@ -54,7 +54,7 @@ def dN_dy_matrix(inverse_jacobian, dN_dksi_lst, dN_deta_lst):
     return result
 
 
-def H_matrix(element):
+def H_matrix(element, k):
     # 4 punkty calkowania - uklad ksi i eta
     p = [
         PointKsiEta(-1 / sqrt(3), -1 / sqrt(3)),
@@ -73,7 +73,7 @@ def H_matrix(element):
         jacobian = Jacobian_matrix(element, dN_dksi_lst, dN_deta_lst)
 
         # Odwracamy Jacobian by wyznaczyc dN/dx i dN/dy
-        inverse_jacobian = linalg.inv(jacobian)
+        inverse_jacobian = jacobian.I
 
         # Wyznacznik bedzie nam potrzebny by powiedziec na ile oszacowalismy wynik
         det_jacobian = linalg.det(jacobian)
@@ -89,7 +89,7 @@ def H_matrix(element):
         dN_dy_matrix_multiplied_by_det = (dN_dy * dN_dy_T) * det_jacobian
 
         # Mnozymy nasze macierze 4x4 razy wspolczynnik przewodzenia k
-        matrix_multiplied_by_k.append((dN_dy_matrix_multiplied_by_det + dN_dx_matrix_multiplied_by_det) * 30)
+        matrix_multiplied_by_k.append((dN_dy_matrix_multiplied_by_det + dN_dx_matrix_multiplied_by_det) * k)
 
     # Wyznaczamy macierz H 4x4 poprzez sumowanie poszczegolnych wartosci z macierzy pomnozonej przez k
     result = zeros([4, 4])
@@ -207,9 +207,9 @@ def H_BC_matrix(element, alfa):
     return result
 
 
-def H_matrix_local(element, alfa):
+def H_matrix_local(element, alfa, k):
     # Macierz lokalna powstaje w wyniku zsumowania macierzy H dla punktow i macierzy H z warunkami brzegowymi
-    return H_matrix(element) + H_BC_matrix(element, alfa)
+    return H_matrix(element, k) + H_BC_matrix(element, alfa)
 
 
 def P_vector(element, ambient_temp, alfa):

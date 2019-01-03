@@ -8,5 +8,7 @@
   "ro": 7800,
   "alfa": 300,
   "ambient_temp": 1200,
-  "initial_temp": 100
+  "initial_temp": 100,
+  "simulation_time": 500,
+  "time_step": 50
 }
