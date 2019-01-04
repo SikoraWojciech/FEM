@@ -99,10 +99,6 @@ class Grid:
 
             print('Interval {}'.format(interval + dT))
             print('=========================================')
-            print('P vector ([C]/dT)*{t0} - {P}')
-            print('-----------------------------------------')
-            print(right_part_of_equation)
-            print('-----------------------------------------')
             print('Max: {}'.format(max(t1_vector)))
             print('Min: {}'.format(min(t1_vector)))
             print()

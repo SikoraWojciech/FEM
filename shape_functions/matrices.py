@@ -25,7 +25,7 @@ def Jacobian_matrix(element, dN_dksi_lst, dN_deta_lst):
     dy_deta = 0
     # dx/dksi = dN1/dksi * x1 + .. + dN4/dksi * x4
     # dy/dksi = dN1/deta * x1 + .. + dN4/deta * x4
-    # analogicznie dla y
+    # analogicznie dla eta
     for i in range(4):
         dx_dksi += dN_dksi_lst[i] * element.nodes[i].x
         dx_deta += dN_deta_lst[i] * element.nodes[i].x
@@ -63,8 +63,8 @@ def H_matrix(element, k):
         PointKsiEta(-1 / sqrt(3), 1 / sqrt(3))
     ]
 
-    matrix_multiplied_by_k = []
-    for i in range(4):
+    matrices_multiplied_by_k = []
+    for i in range(len(p)):
         # Wyznaczamy listy 4x1 dN/dksi i dN/deta dla kazdego punktu calkowania
         dN_dksi_lst = dN_dksi_matix(p[i])
         dN_deta_lst = dN_deta_matix(p[i])
@@ -89,7 +89,7 @@ def H_matrix(element, k):
         dN_dy_matrix_multiplied_by_det = (dN_dy * dN_dy_T) * det_jacobian
 
         # Mnozymy nasze macierze 4x4 razy wspolczynnik przewodzenia k
-        matrix_multiplied_by_k.append((dN_dy_matrix_multiplied_by_det + dN_dx_matrix_multiplied_by_det) * k)
+        matrices_multiplied_by_k.append((dN_dy_matrix_multiplied_by_det + dN_dx_matrix_multiplied_by_det) * k)
 
     # Wyznaczamy macierz H 4x4 poprzez sumowanie poszczegolnych wartosci z macierzy pomnozonej przez k
     result = zeros([4, 4])
@@ -97,7 +97,7 @@ def H_matrix(element, k):
         for j in range(4):
             val_tmp = 0
             for integration_point in range(4):
-                val_tmp += matrix_multiplied_by_k[integration_point].item((i, j))
+                val_tmp += matrices_multiplied_by_k[integration_point].item((i, j))
                 result.itemset((i, j), val_tmp)
     return result
 
