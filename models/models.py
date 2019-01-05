@@ -129,8 +129,8 @@ class Grid:
     def create_chart(self, max_temp_lst, min_temp_lst, chart_name):
         plt.plot(max_temp_lst)
         plt.plot(min_temp_lst)
-        plt.xlabel('Time')
-        plt.xlabel('Temperature')
+        plt.xlabel('Time [s]')
+        plt.ylabel('Temperature [C]')
         max_temp_lbl = mpatches.Patch(color='blue', label='Max')
         min_temp_lbl = mpatches.Patch(color='orange', label='Min')
         plt.legend(handles=[max_temp_lbl, min_temp_lbl])
