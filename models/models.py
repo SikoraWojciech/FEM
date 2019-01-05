@@ -1,4 +1,5 @@
 import seaborn as seaborn
+import matplotlib.patches as mpatches
 from numpy import *
 import matplotlib.pyplot as plt
 import seaborn as sb
@@ -86,6 +87,9 @@ class Grid:
 
         left_part_of_equation = self.H_matrix + (self.C_matrix / dT)
 
+        max_temp_list = []
+        min_temp_list = []
+
         for interval in range(0, settings["simulation_time"], dT):
 
             # Wektor t0 - temperatury kazdego z wezlow
@@ -104,8 +108,11 @@ class Grid:
             print('=========================================')
             print('Max: {}'.format(max(t1_vector)))
             print('Min: {}'.format(min(t1_vector)))
+            max_temp_list.append(max(t1_vector))
+            min_temp_list.append(min(t1_vector))
             # self.create_heatmap(interval, settings)
             print()
+        self.create_chart(max_temp_list, min_temp_list, 'temp_chart')
 
     def create_heatmap(self, interval, settings):
         nodes_heatmap = zeros([settings["nH"], settings["nL"]])
@@ -118,6 +125,16 @@ class Grid:
         plt.gca().invert_yaxis()
         sb.heatmap(nodes_heatmap, 0, settings["ambient_temp"], square=True, cmap="OrRd", yticklabels='', xticklabels= '')
         plt.savefig('heatmaps/heatmap_{}s.png'.format(interval + settings["time_step"]))
+
+    def create_chart(self, max_temp_lst, min_temp_lst, chart_name):
+        plt.plot(max_temp_lst)
+        plt.plot(min_temp_lst)
+        plt.xlabel('Time')
+        plt.xlabel('Temperature')
+        max_temp_lbl = mpatches.Patch(color='blue', label='Max')
+        min_temp_lbl = mpatches.Patch(color='orange', label='Min')
+        plt.legend(handles=[max_temp_lbl, min_temp_lbl])
+        plt.savefig('{}.png'.format(chart_name))
 
 
 class PointKsiEta:
