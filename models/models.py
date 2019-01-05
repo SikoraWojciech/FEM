@@ -1,4 +1,7 @@
+import seaborn as seaborn
 from numpy import *
+import matplotlib.pyplot as plt
+import seaborn as sb
 
 
 class Node:
@@ -101,7 +104,20 @@ class Grid:
             print('=========================================')
             print('Max: {}'.format(max(t1_vector)))
             print('Min: {}'.format(min(t1_vector)))
+            # self.create_heatmap(interval, settings)
             print()
+
+    def create_heatmap(self, interval, settings):
+        nodes_heatmap = zeros([settings["nH"], settings["nL"]])
+        counter = 0
+        for i in range(settings["nH"]):
+            for j in range(settings["nL"]):
+                nodes_heatmap.itemset((i, j), self.nodes[counter].temp)
+                counter += 1
+        plt.figure(figsize=(settings["nH"], settings["nL"]))
+        plt.gca().invert_yaxis()
+        sb.heatmap(nodes_heatmap, 0, settings["ambient_temp"], square=True, cmap="OrRd", yticklabels='', xticklabels= '')
+        plt.savefig('heatmaps/heatmap_{}s.png'.format(interval + settings["time_step"]))
 
 
 class PointKsiEta:
