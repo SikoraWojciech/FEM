@@ -3,6 +3,7 @@ import matplotlib.patches as mpatches
 from numpy import *
 import matplotlib.pyplot as plt
 import seaborn as sb
+import imageio
 
 
 class Node:
@@ -112,7 +113,8 @@ class Grid:
             min_temp_list.append(min(t1_vector))
             self.create_heatmap(interval, settings)
             print()
-        self.create_chart(max_temp_list, min_temp_list, 'temp_chart')
+        # self.create_heatmaps(settings)
+        # self.create_chart(max_temp_list, min_temp_list, 'temp_chart')
 
     def create_heatmap(self, interval, settings):
         nodes_heatmap = zeros([settings["nH"], settings["nL"]])
@@ -128,14 +130,23 @@ class Grid:
         plt.savefig('heatmaps/heatmap_{}s.png'.format(interval + settings["time_step"]))
 
     def create_chart(self, max_temp_lst, min_temp_lst, chart_name):
-        plt.plot(max_temp_lst)
         plt.plot(min_temp_lst)
+        plt.plot(max_temp_lst)
         plt.xlabel('Time [s]')
         plt.ylabel('Temperature [C]')
-        max_temp_lbl = mpatches.Patch(color='blue', label='Max')
-        min_temp_lbl = mpatches.Patch(color='orange', label='Min')
+        max_temp_lbl = mpatches.Patch(color='orange', label='Max')
+        min_temp_lbl = mpatches.Patch(color='blue', label='Min')
         plt.legend(handles=[max_temp_lbl, min_temp_lbl])
         plt.savefig('{}.png'.format(chart_name))
+
+    def create_heatmaps(self, settings):
+        images = []
+        filenames = []
+        for interval in range(0, settings["simulation_time"], settings["time_step"]):
+            filenames.append('heatmaps/heatmap_{}s.png'.format(interval + settings["time_step"]))
+        for filename in filenames:
+            images.append(imageio.imread(filename))
+        imageio.mimsave('heatmaps/heating.gif', images)
 
 
 class PointKsiEta:
