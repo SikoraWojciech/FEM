@@ -111,7 +111,7 @@ class Grid:
             print('Min: {}'.format(min(t1_vector)))
             max_temp_list.append(max(t1_vector))
             min_temp_list.append(min(t1_vector))
-            self.create_heatmap(interval, settings)
+            # self.create_heatmap(interval, settings)
             print()
         # self.create_heatmaps(settings)
         # self.create_chart(max_temp_list, min_temp_list, 'temp_chart')
@@ -127,6 +127,8 @@ class Grid:
         plt.gca().invert_yaxis()
         sb.heatmap(nodes_heatmap, 0, settings["ambient_temp"], square=True, cmap="coolwarm", yticklabels='',
                    xticklabels='')
+        # sb.heatmap(nodes_heatmap, 0, 400, square=True, cmap="coolwarm", yticklabels='',
+        #            xticklabels='')
         plt.savefig('heatmaps/heatmap_{}s.png'.format(interval + settings["time_step"]))
 
     def create_chart(self, max_temp_lst, min_temp_lst, chart_name):

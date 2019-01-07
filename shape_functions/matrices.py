@@ -4,14 +4,14 @@ from math import *
 from numpy import *
 
 
-def dN_dksi_matix(p):
+def dN_dksi_matrix(p):
     result = []
     for i in range(4):
         result.append(dN_dksi(i, p.eta))
     return result
 
 
-def dN_deta_matix(p):
+def dN_deta_matrix(p):
     result = []
     for i in range(4):
         result.append(dN_deta(i, p.eta))
@@ -66,8 +66,8 @@ def H_matrix(element, k):
     matrices_multiplied_by_k = []
     for i in range(len(p)):
         # Wyznaczamy listy 4x1 dN/dksi i dN/deta dla kazdego punktu calkowania
-        dN_dksi_lst = dN_dksi_matix(p[i])
-        dN_deta_lst = dN_deta_matix(p[i])
+        dN_dksi_lst = dN_dksi_matrix(p[i])
+        dN_deta_lst = dN_deta_matrix(p[i])
 
         # Wykorzystujemy je do wyliczenia Jacobianu
         jacobian = Jacobian_matrix(element, dN_dksi_lst, dN_deta_lst)
@@ -115,8 +115,8 @@ def C_matrix(element, c, ro):
     N_matrices_multiplied = []
     for i in range(4):
         # Wyznaczamy listy 4x1 dN/dksi i dN/deta dla kazdego punktu calkowania
-        dN_dksi_lst = dN_dksi_matix(p[i])
-        dN_deta_lst = dN_deta_matix(p[i])
+        dN_dksi_lst = dN_dksi_matrix(p[i])
+        dN_deta_lst = dN_deta_matrix(p[i])
 
         # Wykorzystujemy je do wyliczenia Jacobianu
         jacobian = Jacobian_matrix(element, dN_dksi_lst, dN_deta_lst)
