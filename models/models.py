@@ -1,4 +1,3 @@
-import seaborn as seaborn
 import matplotlib.patches as mpatches
 from numpy import *
 import matplotlib.pyplot as plt
