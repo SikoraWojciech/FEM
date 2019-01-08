@@ -1,14 +1,14 @@
 {
-  "H": 0.100,
+  "H": 0.050,
   "L": 0.100,
-  "nH": 4,
-  "nL": 4,
+  "nH": 5,
+  "nL": 10,
   "k": 25,
-  "c": 700,
-  "ro": 7800,
+  "c": 486,
+  "ro": 7870,
   "alfa": 300,
   "ambient_temp": 1200,
-  "initial_temp": 100,
-  "simulation_time": 500,
-  "time_step": 50
+  "initial_temp": 21,
+  "simulation_time": 250,
+  "time_step": 13
 }

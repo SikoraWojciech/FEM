@@ -30,9 +30,9 @@ class Element:
         self.P_vector = zeros(4)
 
     def print(self):
-        print("ID: {}; Nodes[{}, {}, {}, {}]; k = {}"
+        print("ID: {}; Nodes[{}, {}, {}, {}]; k = {}; Surfaces_heated = {}"
               .format(self.id, self.nodes[0].id, self.nodes[1].id,
-                      self.nodes[2].id, self.nodes[3].id, self.k))
+                      self.nodes[2].id, self.nodes[3].id, self.k, self.heated_surfaces_indexes))
 
 
 class Grid:
@@ -113,22 +113,23 @@ class Grid:
             min_temp_list.append(min(t1_vector))
             # self.create_heatmap(interval, settings)
             print()
-        # self.create_heatmaps(settings)
+        # self.create_heatmap_animation(settings)
         # self.create_chart(max_temp_list, min_temp_list, 'temp_chart')
 
     def create_heatmap(self, interval, settings):
         nodes_heatmap = zeros([settings["nH"], settings["nL"]])
         counter = 0
-        for i in range(settings["nH"]):
-            for j in range(settings["nL"]):
+        for j in range(settings["nL"]):
+            for i in range(settings["nH"]):
                 nodes_heatmap.itemset((i, j), self.nodes[counter].temp)
                 counter += 1
         plt.figure(figsize=(settings["nH"], settings["nL"]))
         plt.gca().invert_yaxis()
         sb.heatmap(nodes_heatmap, 0, settings["ambient_temp"], square=True, cmap="coolwarm", yticklabels='',
                    xticklabels='')
-        # sb.heatmap(nodes_heatmap, 0, 400, square=True, cmap="coolwarm", yticklabels='',
-        #            xticklabels='')
+        # sb.heatmap(nodes_heatmap, 0, 1000, cmap="coolwarm", yticklabels='',
+        #            xticklabels='', square=True)
+        plt.title('Time : {}s'.format(interval + settings["time_step"]))
         plt.savefig('heatmaps/heatmap_{}s.png'.format(interval + settings["time_step"]))
 
     def create_chart(self, max_temp_lst, min_temp_lst, chart_name):
@@ -141,7 +142,7 @@ class Grid:
         plt.legend(handles=[max_temp_lbl, min_temp_lbl])
         plt.savefig('{}.png'.format(chart_name))
 
-    def create_heatmaps(self, settings):
+    def create_heatmap_animation(self, settings):
         images = []
         filenames = []
         for interval in range(0, settings["simulation_time"], settings["time_step"]):
