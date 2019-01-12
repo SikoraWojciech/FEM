@@ -3,12 +3,12 @@
   "L": 0.100,
   "nH": 5,
   "nL": 10,
-  "k": 25,
+  "k": 51.9,
   "c": 486,
   "ro": 7870,
   "alfa": 300,
   "ambient_temp": 1200,
   "initial_temp": 21,
   "simulation_time": 250,
-  "time_step": 13
+  "time_step": 25
 }

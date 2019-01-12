@@ -1,7 +1,7 @@
 import json
 
 
-def read_settings():
-    with open('./settings.json') as f:
+def read_settings(path):
+    with open(path) as f:
         data = json.load(f)
     return data

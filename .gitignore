@@ -5,3 +5,8 @@ venv/*
 *.csv
 *.png
 *.gif
+build/*
+dist/*
+*.spec
+*.jpg
+*.csv

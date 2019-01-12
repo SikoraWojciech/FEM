@@ -104,16 +104,18 @@ class Grid:
             for i in range(len(t1_vector)):
                 self.nodes[i].temp = t1_vector[i]
 
-            print('Interval {}'.format(interval + dT))
-            print('=========================================')
-            print('Max: {}'.format(max(t1_vector)))
-            print('Min: {}'.format(min(t1_vector)))
+            # print('Interval {}'.format(interval + dT))
+            # print('=========================================')
+            # print('Max: {}'.format(max(t1_vector)))
+            # print('Min: {}'.format(min(t1_vector)))
             max_temp_list.append(max(t1_vector))
             min_temp_list.append(min(t1_vector))
-            # self.create_heatmap(interval, settings)
+            if (settings["simulation_time"]/settings["time_step"]) <= 20:
+                self.create_heatmap(interval, settings)
             print()
         # self.create_heatmap_animation(settings)
-        # self.create_chart(max_temp_list, min_temp_list, 'temp_chart')
+        self.create_chart(max_temp_list, min_temp_list, 'temp_chart', settings)
+        self.save_temps_to_csv(max_temp_list, min_temp_list, settings)
 
     def create_heatmap(self, interval, settings):
         nodes_heatmap = zeros([settings["nH"], settings["nL"]])
@@ -129,9 +131,10 @@ class Grid:
         # sb.heatmap(nodes_heatmap, 0, 1000, cmap="coolwarm", yticklabels='',
         #            xticklabels='', square=True)
         plt.title('Time : {}s'.format(interval + settings["time_step"]))
-        plt.savefig('heatmaps/heatmap_{}s.png'.format(interval + settings["time_step"]))
+        plt.savefig('heatmaps/heatmap_{}s.jpg'.format(interval + settings["time_step"]))
 
-    def create_chart(self, max_temp_lst, min_temp_lst, chart_name):
+    def create_chart(self, max_temp_lst, min_temp_lst, chart_name, settings):
+        plt.close('all')
         plt.plot(min_temp_lst)
         plt.plot(max_temp_lst)
         plt.xlabel('Time [s]')
@@ -139,7 +142,7 @@ class Grid:
         max_temp_lbl = mpatches.Patch(color='orange', label='Max')
         min_temp_lbl = mpatches.Patch(color='blue', label='Min')
         plt.legend(handles=[max_temp_lbl, min_temp_lbl])
-        plt.savefig('{}.png'.format(chart_name))
+        plt.savefig(settings["img_path"] + '{}.jpg'.format(chart_name))
 
     def create_heatmap_animation(self, settings):
         images = []
@@ -148,7 +151,11 @@ class Grid:
             filenames.append('heatmaps/heatmap_{}s.png'.format(interval + settings["time_step"]))
         for filename in filenames:
             images.append(imageio.imread(filename))
-        imageio.mimsave('heatmaps/heating.gif', images)
+        imageio.mimsave(settings["img_path"] + 'heating.gif', images)
+
+    def save_temps_to_csv(self, max_temp_lst, min_temp_lst, settings):
+        arr = array([max_temp_lst, min_temp_lst])
+        savetxt(settings["img_path"] + '{}.csv'.format('temperatures'), arr, delimiter=";")
 
 
 class PointKsiEta:
